@@ -16,7 +16,7 @@ def add_element(database, item):
     return item
 
 add_element(users, {"name": "admin", "email": "admin@flask-rest.com", "gender": "female", "status": "active"})
-
+add_element(posts, {"userid": 0, "title": "admin@flask-rest.com", "body": "This is a test message"})
 def wrap_data(data):
     return {"meta": {}, "data": data}
 
@@ -36,6 +36,7 @@ def hello():
 
 #  /users Resource:
 user_fields = ["name", "email", "gender", "status"]
+message_fields = ["userid", "title", "body"]
 
 @app.route('/api/users', methods=["GET"])
 def get_users():
@@ -59,9 +60,23 @@ def create_user():
     return wrap_data(created_user), 201
 
 # /posts Resource:
-
+@app.route('/api/posts', methods=["GET"])
 def get_posts():
-    pass # FYLL INN HER
-
+    return wrap_data(posts)
+    
+@app.route('/api/posts', methods=["POST"])
 def create_post():
-    pass # FYLL INN HER
+    content = request.get_json()
+
+    # Gå gjennom alle feltene vi krever i en user ressurs:
+    for field in message_fields:
+        # Hvis feltet ikke er med i input, eller det er en tom streng
+        if ( field not in content.keys() ) or ( content[field] == "" ):
+            # Gi feilmelding i 400-serien, BAD CLIENT INPUT
+            return {"message": "missing field: '%s'" % field}, 400
+
+    # Legg til ny bruker i bruker-database
+    created_user = add_element(posts, content)
+    print(content)
+    # Returner den ny-opprettede brukeren, med statuskode 201 CREATED
+    return wrap_data(created_user), 201
